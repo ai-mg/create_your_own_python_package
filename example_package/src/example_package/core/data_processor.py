@@ -131,10 +131,12 @@ class DataProcessor:
             threshold: Z-score threshold (default: 2.0)
 
         Returns:
-            Data with outliers removed
+            Data with outliers removed. If there are fewer than three values
+            or the data has zero variance, the original data is returned
+            unchanged.
 
         Raises:
-            ValueError: If data is empty or has insufficient values
+            ValueError: If data is empty
         """
         if not data:
             raise ValueError("Data cannot be empty")
