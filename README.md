@@ -966,6 +966,24 @@ html_theme = 'sphinx_rtd_theme'
 - [ ] Run tests: `pytest`
 - [ ] Publish to PyPI
 
+## Complete Working Example
+
+**See the [`example_package/`](example_package/) directory for a complete, working example!**
+
+This example demonstrates:
+- ✅ Modern src-layout structure
+- ✅ pyproject.toml with PEP 621 metadata
+- ✅ Type hints with py.typed marker
+- ✅ Comprehensive test suite (98% coverage)
+- ✅ GitHub Actions CI/CD
+- ✅ Pre-commit hooks
+- ✅ Code formatted with black and checked with ruff
+- ✅ Proper documentation with Google-style docstrings
+- ✅ MIT License
+- ✅ Ready to publish to PyPI
+
+You can use this as a template for your own packages!
+
 ## Additional Resources
 
 - [Python Packaging User Guide](https://packaging.python.org/)
