@@ -1,6 +1,8 @@
-# Creating Python Packages on GitHub: A Practical Guide
+# Creating Python Packages on GitHub: A Practical Guide (2026 Edition)
 
-Ever wondered how to turn your Python scripts into a proper package on GitHub? As a solar physicist who recently transformed magnetic field analysis code into a package, I'll share my experience and practical tips. Let's dive in!
+Ever wondered how to turn your Python scripts into a proper package on GitHub? This guide covers the latest best practices for creating Python packages using modern standards (PEP 517, PEP 518, PEP 621) and tools. Let's dive in!
+
+> **Note**: This guide has been updated to reflect the current best practices as of 2026, including the use of `pyproject.toml` as the primary configuration file and the src-layout pattern.
 
 ## Getting Started with GitHub
 
@@ -25,54 +27,209 @@ Ever wondered how to turn your Python scripts into a proper package on GitHub? A
    ```
 
 
-## Creating Package Structure on GitHub
+## Modern Package Structure (Recommended: src-layout)
 
-Create this structure in your cloned repository:
+The **src-layout** is the modern best practice for Python packages. It prevents common issues and ensures proper testing:
+
 ```plaintext
-stability_analysis/                # Root project directory
-├── stability_analysis/           # Package directory
-│   ├── __init__.py              # Package initialization
-│   └── core/                    # Core functionality
-│       ├── __init__.py          # Subpackage initialization
-│       └── module_files.py      # Implementation modules
+your_package/                      # Root project directory
+├── src/                          # Source directory (recommended)
+│   └── your_package/            # Package directory
+│       ├── __init__.py          # Package initialization
+│       ├── py.typed             # Marker for type hints
+│       └── core/                # Core functionality
+│           ├── __init__.py      # Subpackage initialization
+│           └── module_files.py  # Implementation modules
 ├── tests/                        # Test directory
-├── docs/                        # Documentation
-├── .github/                     # GitHub specific
+│   ├── __init__.py
+│   └── test_module.py
+├── docs/                         # Documentation
+│   ├── conf.py
+│   └── index.rst
+├── .github/                      # GitHub specific
 │   └── workflows/               # GitHub Actions
 │       └── ci.yml              # CI configuration
-├── setup.py                     # Installation configuration
-└── requirements.txt             # Dependencies
+├── pyproject.toml               # Modern project configuration (PEP 621)
+├── setup.py                     # Optional backward compatibility
+├── requirements.txt             # Dependencies (or use pyproject.toml)
+├── requirements-dev.txt         # Development dependencies
+├── .gitignore                   # Git ignore patterns
+├── LICENSE                      # License file
+├── README.md                    # Project documentation
+└── MANIFEST.in                  # Include/exclude package data
 ```
 
-For e.g., 
-   ```
-   mkdir -p stability_analysis/stability_analysis/core # To create the directory structure
+### Why src-layout?
 
-   # To place the files
-   # Main __init__.py
-   touch stability_analysis/stability_analysis/__init__.py
+1. **Import Protection**: Prevents accidentally importing from the source directory during development
+2. **Testing Integrity**: Ensures tests run against the installed package, not source files
+3. **Cleaner Namespace**: Separates package code from project files
+4. **Industry Standard**: Widely adopted by the Python community
 
-   # Core __init__.py
-   touch stability_analysis/stability_analysis/core/__init__.py
+### Alternative: Flat Layout
 
-   ```
+For simple packages, you can use a flat layout (package directly in root), but src-layout is recommended for most projects:
 
-## Setting Up GitHub-Specific Files
+```plaintext
+your_package/                      # Root project directory
+├── your_package/                 # Package directory (no src/)
+│   ├── __init__.py
+│   └── module.py
+├── tests/
+├── pyproject.toml
+└── README.md
+```
 
-1. **requirements.txt**
-   ```
-   numpy>=1.21.0
-   scipy>=1.7.0
-   matplotlib>=3.4.0
-   pytest>=6.2.0
-   pytest-cov>=2.12.0
-   black>=21.5b2
-   flake8>=3.9.0
-   ```
+### Creating the Directory Structure
 
-2. **__init__.py**
+```bash
+# Using src-layout (recommended)
+mkdir -p your_package/src/your_package/core
+mkdir -p your_package/tests
+mkdir -p your_package/docs
+mkdir -p your_package/.github/workflows
 
-   The `__init__.py` file is crucial - it's not just a package marker! Here's an example `__init__.py` file below followed by the description showing its different roles:
+# Create essential files
+touch your_package/src/your_package/__init__.py
+touch your_package/src/your_package/py.typed
+touch your_package/src/your_package/core/__init__.py
+touch your_package/tests/__init__.py
+touch your_package/pyproject.toml
+touch your_package/README.md
+touch your_package/.gitignore
+```
+
+## Modern Configuration: pyproject.toml (PEP 621)
+
+The `pyproject.toml` file is now the **standard** way to configure Python projects (replacing setup.py). It follows PEP 517, PEP 518, and PEP 621 standards.
+
+### Basic pyproject.toml Example
+
+```toml
+[build-system]
+# PEP 517/518 - Specify the build backend
+requires = ["setuptools>=65.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+# PEP 621 - Project metadata
+name = "your_package"
+version = "0.1.0"
+description = "A short description of your package"
+readme = "README.md"
+authors = [
+    {name = "Your Name", email = "your.email@example.com"}
+]
+license = {text = "MIT"}
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+requires-python = ">=3.9"
+dependencies = [
+    "numpy>=1.24.0",
+    "scipy>=1.10.0",
+    "matplotlib>=3.7.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "black>=23.0.0",
+    "ruff>=0.1.0",
+    "mypy>=1.5.0",
+]
+docs = [
+    "sphinx>=7.0.0",
+    "sphinx-rtd-theme>=1.3.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/yourusername/your_package"
+Documentation = "https://your_package.readthedocs.io"
+Repository = "https://github.com/yourusername/your_package.git"
+Issues = "https://github.com/yourusername/your_package/issues"
+
+# Tool-specific configurations
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.black]
+line-length = 88
+target-version = ['py39', 'py310', 'py311', 'py312']
+
+[tool.ruff]
+line-length = 88
+select = ["E", "F", "I", "N", "W"]
+ignore = []
+
+[tool.mypy]
+python_version = "3.9"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_functions = ["test_*"]
+addopts = "--cov=your_package --cov-report=html --cov-report=term"
+```
+
+### Alternative Build Backends
+
+Modern Python packaging supports multiple build backends. Choose based on your needs:
+
+#### 1. Setuptools (Most Common)
+```toml
+[build-system]
+requires = ["setuptools>=65.0", "wheel"]
+build-backend = "setuptools.build_meta"
+```
+
+#### 2. Hatchling (Modern, Fast)
+```toml
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/your_package"]
+```
+
+#### 3. Flit (Minimal, Simple)
+```toml
+[build-system]
+requires = ["flit_core >=3.2,<4"]
+build-backend = "flit_core.buildapi"
+```
+
+#### 4. Poetry (Dependency Management)
+```toml
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "your_package"
+version = "0.1.0"
+# ... other metadata
+
+[tool.poetry.dependencies]
+python = "^3.9"
+numpy = "^1.24.0"
+```
+
+## The __init__.py File
+
+The `__init__.py` file is crucial - it's not just a package marker! Here's an example `__init__.py` file below followed by the description showing its different roles:
 
    ```python
    """
@@ -253,169 +410,571 @@ For e.g.,
        return PILDetector()
    ```
 
-3. **.github/workflows/ci.yml**
-   The `.github/workflows/ci.yml` file is part of GitHub Actions, which is GitHub's built-in continuous integration and continuous deployment (CI/CD) system. Its purpose is to automate various tasks when you push code or create pull requests. Let me explain the CI workflow from the example script below:
+## Modern GitHub Actions CI/CD
 
-   ```yaml 
-   name: CI/CD
+The `.github/workflows/ci.yml` file automates testing, code quality checks, and deployment. Here's a modern example:
 
-   # 1. When it runs:
-   
-   on:
-     push:
-       branches: [ main ]  # Runs when code is pushed to main branch
-     pull_request:
-       branches: [ main ]  # Runs when a pull request is made to main branch
-  
-   # 2. What it does:
-   
-   jobs:
-     test:  # First job: testing
-       runs-on: ubuntu-latest
-       strategy:
-         matrix:
-           python-version: [3.8, 3.9]  # Tests on multiple Python versions
+```yaml
+name: CI/CD
 
-       steps:
-       - uses: actions/checkout@v2  # Gets your code
-       
-       - name: Set up Python
-         uses: actions/setup-python@v2  # Sets up Python
-       
-       - name: Install dependencies  # Installs requirements
-         run: |
-           pip install -r requirements.txt
-           pip install -e .[dev]
-       
-       - name: Code formatting check  # Checks code style
-         run: |
-           black . --check  # Checks code formatting
-           isort . --check  # Checks import ordering
-           flake8 .  # Checks PEP8 compliance
-       
-       - name: Type checking  # Checks type hints
-         run: |
-           mypy stability_analysis
-       
-       - name: Run tests  # Runs test suite
-         run: |
-           pytest tests/ --cov=stability_analysis
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  release:
+    types: [ published ]
 
-     docs:  # Second job: documentation
-       needs: test  # Only runs if tests pass
-       if: github.ref == 'refs/heads/main'  # Only runs on main branch
-       steps:
-       - name: Build documentation
-         run: |
-           cd docs
-           make html
-   ```
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python-version: ["3.9", "3.10", "3.11", "3.12"]
 
-   Main benefits:
-   1. **Automated Testing**: Automatically runs tests on each code change
-   2. **Code Quality**: Enforces coding standards and style
-   3. **Documentation**: Automatically builds and deploys documentation
-   4. **Multiple Python Versions**: Tests compatibility across versions
-   5. **Pull Request Checks**: Validates changes before merging
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+        cache: 'pip'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e .[dev]
+    
+    - name: Lint with ruff
+      run: |
+        ruff check .
+    
+    - name: Format check with black
+      run: |
+        black --check .
+    
+    - name: Type check with mypy
+      run: |
+        mypy src/
+    
+    - name: Test with pytest
+      run: |
+        pytest tests/ --cov=your_package --cov-report=xml --cov-report=term
+    
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v4
+      with:
+        file: ./coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: false
 
-   Example of what it looks like in action:
-   ```python
-   # If you make this change:
-   def analyze_data(x):
-       return x + 1  # Missing type hint
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.12"
+    
+    - name: Install build dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install build twine
+    
+    - name: Build package
+      run: python -m build
+    
+    - name: Check package
+      run: twine check dist/*
+    
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: dist
+        path: dist/
 
-   # And push to GitHub, the CI will fail with:
-   # mypy error: Missing type annotation for parameter 'x'
-
-   # After fixing:
-   def analyze_data(x: float) -> float:
-       return x + 1  # CI passes
-   ```
-
-   To set this up:
-   1. Create `.github/workflows/ci.yml` in your repository
-   2. Enable GitHub Actions in repository settings
-   3. Add status badges to README:
-   ```markdown
-   ![Tests](https://github.com/username/repo/workflows/CI/badge.svg)
-   [![codecov](https://codecov.io/gh/username/repo/branch/main/graph/badge.svg)](https://codecov.io/gh/username/repo)
-   ```
-   
-
-4. **setup.py**
-
-   Making Your Package Installable
-
-   The `setup.py` file is your package's ID card. Here's an example:
-
-   ```python
-   from setuptools import setup, find_packages
-
-   with open("README.md", "r", encoding="utf-8") as fh:
-       long_description = fh.read()
-
-   with open("requirements.txt", "r", encoding="utf-8") as fh:
-       requirements = [line.strip() for line in fh if line.strip() and not line.startswith("#")]
-
-   setup(
-       name="stability_analysis",
-       version="0.1.0",
-       author="Manu Gupta",
-       author_email="your.email@example.com",
-       description="Analysis tools for solar magnetic field stability",
-       long_description=long_description,
-       long_description_content_type="text/markdown",
-       url="https://github.com/yourusername/stability_analysis",
-       packages=find_packages(),
-       classifiers=[
-           "Development Status :: 3 - Alpha",
-           "Intended Audience :: Science/Research",
-           "Topic :: Scientific/Engineering :: Physics",
-           "Programming Language :: Python :: 3",
-           "License :: OSI Approved :: MIT License",
-           "Operating System :: OS Independent",
-       ],
-       python_requires=">=3.8",
-       install_requires=requirements,
-       extras_require={
-           "dev": [
-               "pytest",
-               "pytest-cov",
-               "black",
-               "isort",
-               "flake8",
-               "mypy",
-               "sphinx",
-           ]
-       },
-   )
-   ```
-
-
-## Installing and Using Your Package
-
-Once your package is on GitHub, others can install it:
-
-```bash
-# For users
-pip install git+https://github.com/yourusername/stability_analysis.git
-
-# For development
-git clone https://github.com/yourusername/stability_analysis.git
-cd stability_analysis
-pip install -e .
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event_name == 'release' && github.event.action == 'published'
+    environment:
+      name: pypi
+      url: https://pypi.org/p/your_package
+    permissions:
+      id-token: write  # Required for trusted publishing
+    
+    steps:
+    - name: Download artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: dist
+        path: dist/
+    
+    - name: Publish to PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
 ```
 
-Using the package is then as simple as:
+### Key Features of Modern CI/CD:
+
+1. **Multiple OS Testing**: Tests on Ubuntu, Windows, and macOS
+2. **Python Version Matrix**: Tests across multiple Python versions
+3. **Dependency Caching**: Speeds up workflow with pip cache
+4. **Modern Linting**: Uses `ruff` (faster than flake8) and `black`
+5. **Type Checking**: Validates type hints with `mypy`
+6. **Code Coverage**: Uploads coverage to Codecov
+7. **Package Building**: Uses modern `build` tool (PEP 517)
+8. **Trusted Publishing**: Uses OpenID Connect for secure PyPI publishing (no tokens needed!)
+
+### Status Badges for README
+
+Add these badges to show build status:
+
+```markdown
+[![CI/CD](https://github.com/username/repo/actions/workflows/ci.yml/badge.svg)](https://github.com/username/repo/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/username/repo/branch/main/graph/badge.svg)](https://codecov.io/gh/username/repo)
+[![PyPI version](https://badge.fury.io/py/your-package.svg)](https://badge.fury.io/py/your-package)
+[![Python versions](https://img.shields.io/pypi/pyversions/your-package.svg)](https://pypi.org/project/your-package/)
+[![License](https://img.shields.io/github/license/username/repo.svg)](https://github.com/username/repo/blob/main/LICENSE)
+```
+
+## Additional Important Files
+
+### 1. .gitignore
+
+Essential for excluding build artifacts and temporary files:
+
+```gitignore
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+venv/
+env/
+ENV/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# Type checking
+.mypy_cache/
+.pytype/
+
+# OS
+.DS_Store
+Thumbs.db
+```
+
+### 2. LICENSE
+
+Choose an appropriate license. Popular choices:
+- **MIT**: Permissive, simple
+- **Apache 2.0**: Permissive with patent protection
+- **GPL-3.0**: Copyleft license
+- **BSD-3-Clause**: Permissive with attribution
+
+### 3. MANIFEST.in (Optional)
+
+If you need to include non-Python files in your package:
+
+```
+include README.md
+include LICENSE
+include requirements.txt
+recursive-include src/your_package/data *
+recursive-include docs *.rst
+global-exclude __pycache__
+global-exclude *.py[co]
+```
+
+### 4. py.typed
+
+A marker file to indicate your package supports type hints:
+
+```bash
+touch src/your_package/py.typed
+```
+
+This allows type checkers like mypy to use your package's type hints.
+
+### 5. setup.py (Optional - for backward compatibility)
+
+While `pyproject.toml` is now standard, you may want a minimal `setup.py` for backward compatibility:
 
 ```python
-from stability_analysis import PILDetector, MagneticField
+"""Setup script for backward compatibility."""
+from setuptools import setup
 
-# Load magnetic field data
-field = MagneticField("data_path")
-bz = field.load_boundary_field("20170906_0900")
+# All configuration is in pyproject.toml
+setup()
+```
 
-# Detect PIL
-detector = PILDetector(bz)
-pil_map = detector.detect()
-   ```
+Or a more detailed version if not using pyproject.toml:
+
+```python
+from setuptools import setup, find_packages
+
+with open("README.md", "r", encoding="utf-8") as fh:
+    long_description = fh.read()
+
+setup(
+    name="your_package",
+    version="0.1.0",
+    author="Your Name",
+    author_email="your.email@example.com",
+    description="A short description",
+    long_description=long_description,
+    long_description_content_type="text/markdown",
+    url="https://github.com/yourusername/your_package",
+    project_urls={
+        "Bug Tracker": "https://github.com/yourusername/your_package/issues",
+    },
+    classifiers=[
+        "Programming Language :: Python :: 3",
+        "License :: OSI Approved :: MIT License",
+        "Operating System :: OS Independent",
+    ],
+    package_dir={"": "src"},
+    packages=find_packages(where="src"),
+    python_requires=">=3.9",
+    install_requires=[
+        "numpy>=1.24.0",
+    ],
+    extras_require={
+        "dev": ["pytest", "black", "ruff", "mypy"],
+    },
+)
+```
+
+
+## Building and Publishing Your Package
+
+### Building the Package
+
+Modern Python uses the `build` tool (PEP 517):
+
+```bash
+# Install build tool
+pip install build
+
+# Build both wheel and source distribution
+python -m build
+
+# Output:
+# dist/
+#   your_package-0.1.0-py3-none-any.whl
+#   your_package-0.1.0.tar.gz
+```
+
+### Publishing to PyPI
+
+#### Method 1: Trusted Publishing (Recommended - No tokens!)
+
+GitHub Actions can publish directly to PyPI using OpenID Connect:
+
+1. **Configure PyPI**:
+   - Go to PyPI → Account Settings → Publishing
+   - Add a new "trusted publisher"
+   - Enter: GitHub username, repository name, workflow name, environment name
+
+2. **Use in GitHub Actions** (already shown in CI/CD section above)
+
+#### Method 2: Using API Token
+
+```bash
+# Install twine
+pip install twine
+
+# Upload to TestPyPI first
+twine upload --repository testpypi dist/*
+
+# Test installation
+pip install --index-url https://test.pypi.org/simple/ your_package
+
+# Upload to PyPI
+twine upload dist/*
+```
+
+### Installing Your Package
+
+Once published on GitHub or PyPI:
+
+```bash
+# From PyPI
+pip install your_package
+
+# From GitHub (latest)
+pip install git+https://github.com/yourusername/your_package.git
+
+# From GitHub (specific branch/tag)
+pip install git+https://github.com/yourusername/your_package.git@v0.1.0
+
+# For development (editable install)
+git clone https://github.com/yourusername/your_package.git
+cd your_package
+pip install -e .[dev]
+```
+
+### Using Your Package
+
+```python
+from your_package import YourClass
+
+# Use your package
+obj = YourClass()
+result = obj.process()
+```
+
+## Modern Best Practices Summary
+
+### Development Tools (2026)
+
+1. **Ruff**: Fast Python linter and formatter (replaces flake8, isort, and more)
+2. **Black**: Code formatter (or use ruff format)
+3. **mypy**: Static type checker
+4. **pytest**: Testing framework
+5. **pre-commit**: Git hooks for code quality
+
+### Pre-commit Configuration
+
+Create `.pre-commit-config.yaml`:
+
+```yaml
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-added-large-files
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.1.0
+    hooks:
+      - id: ruff
+        args: [--fix]
+      - id: ruff-format
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.7.0
+    hooks:
+      - id: mypy
+        additional_dependencies: [types-all]
+```
+
+Install pre-commit hooks:
+
+```bash
+pip install pre-commit
+pre-commit install
+```
+
+### Type Hints
+
+Modern Python packages should include type hints:
+
+```python
+from typing import List, Optional, Dict, Any
+
+def process_data(
+    data: List[float],
+    threshold: float = 0.5,
+    options: Optional[Dict[str, Any]] = None
+) -> List[float]:
+    """Process data with optional filtering.
+    
+    Args:
+        data: Input data points
+        threshold: Filtering threshold
+        options: Optional processing options
+        
+    Returns:
+        Processed data
+        
+    Raises:
+        ValueError: If data is empty
+    """
+    if not data:
+        raise ValueError("Data cannot be empty")
+    
+    options = options or {}
+    return [x for x in data if x > threshold]
+```
+
+### Testing Best Practices
+
+```python
+# tests/test_module.py
+import pytest
+from your_package import YourClass
+
+def test_basic_functionality():
+    """Test basic functionality."""
+    obj = YourClass()
+    result = obj.process()
+    assert result is not None
+
+def test_error_handling():
+    """Test error handling."""
+    obj = YourClass()
+    with pytest.raises(ValueError):
+        obj.process(invalid_input=True)
+
+@pytest.fixture
+def sample_data():
+    """Provide sample data for tests."""
+    return [1, 2, 3, 4, 5]
+
+def test_with_fixture(sample_data):
+    """Test using fixture."""
+    obj = YourClass()
+    result = obj.process(sample_data)
+    assert len(result) == len(sample_data)
+```
+
+## Version Management
+
+### Semantic Versioning
+
+Follow [SemVer](https://semver.org/): `MAJOR.MINOR.PATCH`
+
+- **MAJOR**: Breaking changes
+- **MINOR**: New features (backward compatible)
+- **PATCH**: Bug fixes
+
+### Dynamic Versioning
+
+Keep version in one place using `__version__`:
+
+```python
+# src/your_package/__init__.py
+__version__ = "0.1.0"
+```
+
+```toml
+# pyproject.toml
+[project]
+dynamic = ["version"]
+
+[tool.setuptools.dynamic]
+version = {attr = "your_package.__version__"}
+```
+
+## Documentation
+
+### Docstring Format (Google Style)
+
+```python
+def complex_function(param1: int, param2: str) -> bool:
+    """Brief description of function.
+    
+    Longer description explaining what the function does,
+    its purpose, and any important details.
+    
+    Args:
+        param1: Description of param1
+        param2: Description of param2
+    
+    Returns:
+        Description of return value
+    
+    Raises:
+        ValueError: When param1 is negative
+        TypeError: When param2 is not a string
+    
+    Example:
+        >>> result = complex_function(5, "test")
+        >>> print(result)
+        True
+    """
+    if param1 < 0:
+        raise ValueError("param1 must be non-negative")
+    return len(param2) > param1
+```
+
+### Sphinx Documentation
+
+Basic `docs/conf.py`:
+
+```python
+project = 'Your Package'
+copyright = '2026, Your Name'
+author = 'Your Name'
+
+extensions = [
+    'sphinx.ext.autodoc',
+    'sphinx.ext.napoleon',  # Google/NumPy style docstrings
+    'sphinx.ext.viewcode',
+    'sphinx.ext.intersphinx',
+]
+
+html_theme = 'sphinx_rtd_theme'
+```
+
+## Quick Start Checklist
+
+- [ ] Create repository with README, LICENSE, .gitignore
+- [ ] Set up src-layout structure
+- [ ] Create `pyproject.toml` with metadata and dependencies
+- [ ] Write package code with type hints
+- [ ] Add `__init__.py` files
+- [ ] Create `py.typed` marker
+- [ ] Write tests in `tests/` directory
+- [ ] Set up `.github/workflows/ci.yml`
+- [ ] Install pre-commit hooks
+- [ ] Add documentation
+- [ ] Build package: `python -m build`
+- [ ] Test locally: `pip install -e .[dev]`
+- [ ] Run tests: `pytest`
+- [ ] Publish to PyPI
+
+## Additional Resources
+
+- [Python Packaging User Guide](https://packaging.python.org/)
+- [PEP 517 - Build System](https://www.python.org/dev/peps/pep-0517/)
+- [PEP 518 - Build System Dependencies](https://www.python.org/dev/peps/pep-0518/)
+- [PEP 621 - Project Metadata](https://www.python.org/dev/peps/pep-0621/)
+- [setuptools documentation](https://setuptools.pypa.io/)
+- [GitHub Actions documentation](https://docs.github.com/en/actions)
+
+---
+
+**See the `example_package/` directory for a complete working example!**
