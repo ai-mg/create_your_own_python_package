@@ -43,7 +43,7 @@ jobs:
     
     - name: Test with pytest
       run: |
-        pytest tests/ --cov=example_package --cov-report=xml --cov-report=term
+        pytest tests/
 
   build:
     needs: test
